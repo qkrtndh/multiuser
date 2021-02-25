@@ -1,24 +1,18 @@
 {
   "users": [
     {
-      "id": "Wih4n3_2U",
-      "email": "soo@naver.com",
-      "password": "1234",
-      "nickname": "soo"
-    },
-    {
-      "id": "vXesMxl0r",
-      "email": "1234",
-      "password": "1234",
+      "id": "Syq2Yr732",
+      "email": "1",
+      "password": "$2b$10$eq7J1eczI13.r/lGiZToA.DlcWkSInL4hAo37KLevaqcsz7mswYxS",
       "nickname": "master"
     }
   ],
   "topics": [
     {
-      "id": "22E7mYRHO",
-      "title": "1111",
-      "description": "2222",
-      "user_id": "Wih4n3_2U"
+      "id": "vZWiXB23r",
+      "title": "확인용 글",
+      "description": "확인용 글",
+      "user_id": "Syq2Yr732"
     }
   ]
 }

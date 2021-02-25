@@ -7,7 +7,7 @@ var template = require('../lib/template.js');
 var shortid = require('shortid');
 
 var db = require('../lib/db');
-
+var bcrypt = require('bcrypt');//모듈을 불러온다
 
 module.exports = function (passport) {
   router.get('/login', function (request, response) {
@@ -79,14 +79,14 @@ module.exports = function (passport) {
         response.redirect('/auth/register');
       }
       else {
-        var user = { id: shortid.generate(), email: email, password: pwd, nickname: nickname };
-        db.get('users').push(user).write();
-        //response.redirect('/auth/login');수동 로그인
-        //자동로그인
-        request.login(user,function(err){
-          console.log('redirect')
-          return response.redirect('/');
-        })
+        bcrypt.hash(pwd, 10, function (err, hash) {
+          var user = { id: shortid.generate(), email: email, password: hash, nickname: nickname };
+          db.get('users').push(user).write();
+          request.login(user, function (err) {
+            console.log('redirect')
+            return response.redirect('/');
+          })
+        });
       }
     }
   });

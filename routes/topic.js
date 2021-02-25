@@ -7,6 +7,7 @@ var template = require('../lib/template.js');
 var auth = require('../lib/auth');
 var db = require('../lib/db')
 var shortid = require('shortid')
+
 router.get('/create', function (request, response) {
   if (!auth.isOwner(request, response)) {
     response.redirect('/auth/login');
