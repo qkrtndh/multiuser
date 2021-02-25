@@ -6,12 +6,7 @@ var sanitizeHtml = require('sanitize-html');
 var template = require('../lib/template.js');
 var shortid = require('shortid');
 
-const low = require('lowdb')
-const FileSync = require('lowdb/adapters/FileSync')
-
-const adapter = new FileSync('db.json')
-const db = low(adapter)
-db.defaults({ users: [] }).write()
+var db = require('../lib/db');
 
 
 module.exports = function (passport) {
@@ -84,8 +79,14 @@ module.exports = function (passport) {
         response.redirect('/auth/register');
       }
       else {
-        db.get('users').push({ id: shortid.generate(), email: email, password: pwd, nickname: nickname }).write();
-        response.redirect('/auth/login');
+        var user = { id: shortid.generate(), email: email, password: pwd, nickname: nickname };
+        db.get('users').push(user).write();
+        //response.redirect('/auth/login');수동 로그인
+        //자동로그인
+        request.login(user,function(err){
+          console.log('redirect')
+          return response.redirect('/');
+        })
       }
     }
   });
