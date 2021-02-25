@@ -47,18 +47,24 @@ router.post('/create_process', function (request, response) {
 });
 
 router.get('/update/:pageId', function (request, response) {
-  if (!auth.isOwner(request, response)) {
-    response.redirect('/auth/login');
+  if(!auth.isOwner(request,response)){
+    request.flash('error','로그인이 필요합니다.');
+    response.redirect('/');
     return false;
   }
-  var filteredId = path.parse(request.params.pageId).base;
-  fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
-    var title = request.params.pageId;
-    var list = template.list(request.list);
-    var html = template.HTML(title, list,
-      `
-        <form action="/topic/update_process" method="post">
-          <input type="hidden" name="id" value="${title}">
+  var topic = db.get('topics').find({ id: request.params.pageId }).value();
+  
+  if (topic.user_id != request.user.id) {
+    request.flash('error', '작성자가 아닙니다!');
+    return response.redirect(`/topic/${topic.id}`);
+  }
+  var title = topic.title;
+  var description = topic.description;
+  var list = template.list(request.list);
+  var html = template.HTML(title, list,
+    `
+         <form action="/topic/update_process" method="post">
+          <input type="hidden" name="id" value="${topic.id}">
           <p><input type="text" name="title" placeholder="title" value="${title}"></p>
           <p>
             <textarea name="description" placeholder="description">${description}</textarea>
@@ -68,27 +74,33 @@ router.get('/update/:pageId', function (request, response) {
           </p>
         </form>
         `,
-      `<a href="/topic/create">create</a> <a href="/topic/update/${title}">update</a>`,
-      auth.statusUI(request, response)
-    );
-    response.send(html);
-  });
+    `<a href="/topic/create">create</a> <a href="/topic/update/${topic.id}">update</a>`,
+    auth.statusUI(request, response)
+  );
+  response.send(html);
 });
 
 router.post('/update_process', function (request, response) {
-  if (!auth.isOwner(request, response)) {
-    response.redirect('/auth/login');
+  if(!auth.isOwner(request,response)){
+    request.flash('error','로그인이 필요합니다.');
+    response.redirect('/');
     return false;
   }
   var post = request.body;
   var id = post.id;
   var title = post.title;
   var description = post.description;
-  fs.rename(`data/${id}`, `data/${title}`, function (error) {
-    fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
-      response.redirect(`/topic/${title}`);
-    })
-  });
+  var topic = db.get('topics').find({ id: id }).value();
+  if (topic.user_id != request.user.id) {
+    request.flash('error', '작성자가 아닙니다!');
+  }
+  else {
+    db.get('topics').find({ id: id }).assign({
+      title: title, description: description
+    }).write();
+  }
+  request.flash('success', '수정되었습니다');
+  response.redirect(`/topic/${topic.id}`);
 });
 
 router.post('/delete_process', function (request, response) {
@@ -105,18 +117,27 @@ router.post('/delete_process', function (request, response) {
 });
 
 router.get('/:pageId', function (request, response, next) {
+  var fmsg = request.flash();
+  var feedback = '';
+  if(fmsg.success){
+    feedback = fmsg.success[0];
+  }
+  else if(fmsg.error){
+    feedback = fmsg.error[0];
+  }
   var topic = db.get('topics').find({ id: request.params.pageId }).value();
-  var user = db.get('users').find({id:topic.user_id}).value();
+  var user = db.get('users').find({ id: topic.user_id }).value();
   var sanitizedTitle = sanitizeHtml(topic.title);
   var sanitizedDescription = sanitizeHtml(topic.description, {
     allowedTags: ['h1']
   });
   var list = template.list(request.list);
   var html = template.HTML(sanitizedTitle, list,
-    `<h2>${sanitizedTitle}</h2>${sanitizedDescription}
+    `<div style="color:blue;">${feedback}</div>
+    <h2>${sanitizedTitle}</h2>${sanitizedDescription}
     <p>by ${user.nickname}</p>`,
     ` <a href="/topic/create">create</a>
-            <a href="/topic/update/${sanitizedTitle}">update</a>
+            <a href="/topic/update/${topic.id}">update</a>
             <form action="/topic/delete_process" method="post" onsubmit="return confirm('정말로 삭제하시겠습니까?')">
               <input type="hidden" name="id" value="${sanitizedTitle}">
               <input type="submit" value="delete">
