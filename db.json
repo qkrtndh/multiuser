@@ -5,6 +5,12 @@
       "email": "soo@naver.com",
       "password": "1234",
       "nickname": "soo"
+    },
+    {
+      "id": "vXesMxl0r",
+      "email": "1234",
+      "password": "1234",
+      "nickname": "master"
     }
   ]
 }
