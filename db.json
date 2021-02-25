@@ -12,5 +12,19 @@
       "password": "1234",
       "nickname": "master"
     }
+  ],
+  "topics": [
+    {
+      "id": "td-nnPGgZ",
+      "title": "412",
+      "description": "124",
+      "user_id": "vXesMxl0r"
+    },
+    {
+      "id": "22E7mYRHO",
+      "title": "412",
+      "description": "1324",
+      "user_id": "Wih4n3_2U"
+    }
   ]
 }
