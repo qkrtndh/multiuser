@@ -111,9 +111,17 @@ router.post('/delete_process', function (request, response) {
   var post = request.body;
   var id = post.id;
   var filteredId = path.parse(id).base;
-  fs.unlink(`data/${filteredId}`, function (error) {
-    response.redirect('/');
-  });
+  var topic = db.get('topics').find({ id: id }).value();
+  if (topic.user_id != request.user.id) {
+    request.flash('error', '작성자가 아닙니다!');
+    response.redirect(`/topic/${topic.id}`);
+  }
+  else {
+    db.get('topics').remove({id:id}).write();
+    request.flash('success', '삭제되었습니다');
+    response.redirect(`/`);
+  }
+  
 });
 
 router.get('/:pageId', function (request, response, next) {
@@ -139,7 +147,7 @@ router.get('/:pageId', function (request, response, next) {
     ` <a href="/topic/create">create</a>
             <a href="/topic/update/${topic.id}">update</a>
             <form action="/topic/delete_process" method="post" onsubmit="return confirm('정말로 삭제하시겠습니까?')">
-              <input type="hidden" name="id" value="${sanitizedTitle}">
+              <input type="hidden" name="id" value="${topic.id}">
               <input type="submit" value="delete">
             </form>`,
     auth.statusUI(request, response)
